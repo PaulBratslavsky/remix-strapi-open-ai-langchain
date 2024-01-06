@@ -1,5 +1,8 @@
-export async function updateDescription(dataToSend: any, id: string) {
+export async function updateDescription(formData: any, id: string) {
   const baseUrl = process.env.STRAPI_URL || "http://localhost:1337";
+  
+  const dataToSend = { data: { description: formData.description } };
+
   try {
     const response = await fetch(baseUrl + "/api/videos/" + id, {
       method: "PUT",

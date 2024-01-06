@@ -1,6 +1,13 @@
-export async function saveDescription(dataToSave: any) {
+export async function saveDescription(formData: any) {
   const baseUrl = process.env.STRAPI_URL || "http://localhost:1337";
-  console.log("########## dataToSave ################", dataToSave);
+
+  const dataToSave = {
+    data: {
+      videoId: formData.videoId,
+      description: formData.description,
+    },
+  };
+
   try {
     const response = await fetch(baseUrl + "/api/videos", {
       method: "POST",
@@ -10,10 +17,8 @@ export async function saveDescription(dataToSave: any) {
       body: JSON.stringify({ ...dataToSave }),
     });
     const data = await response.json();
-    console.log("data", data);
-    return { data, message: "saved" };
+    return data;
   } catch (error) {
     console.log("error", error);
   }
-  return { data: {}, message: "saved" };
 }

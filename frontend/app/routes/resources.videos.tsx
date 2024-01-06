@@ -19,15 +19,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
   switch (formItems._action) {
     case "update":
-      const dataToUpdate = { data: { description: formItems.description } };
-      data = await updateDescription(dataToUpdate, formItems.videoId as string);
-      return json({ data: null, message: "Updated!" });
+      data = await updateDescription(formItems, formItems.videoId as string);
+      return json({ data: data, message: "Updated!" });
     case "delete":
       data = await deleteDescription(formItems.videoId as string);
       return json({ data: { description: data, videoId: formItems.videoId } });
 
     default:
-      return json({ data, message: "No action found!" });
+      return json({ data: null, message: "No action found!" });
   }
 }
 

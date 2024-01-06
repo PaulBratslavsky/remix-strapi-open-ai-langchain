@@ -2,13 +2,20 @@ import type { MetaFunction, ActionFunctionArgs } from "@remix-run/node";
 
 import { generateDescription } from "~/services/generate-description.server";
 import { saveDescription } from "~/services/save-description.server";
-
 import { json } from "@remix-run/node";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useNavigation,
+  isRouteErrorResponse,
+  useRouteError,
+} from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { DescriptionListLoader } from "./resources.videos";
+import { extractYouTubeID, renderMessage } from "~/lib/utils";
+import { useEffect } from "react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -21,28 +28,68 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const formItems = Object.fromEntries(formData);
 
+  const videoId = extractYouTubeID(formItems.videoId as string);
+  if (!videoId)
+    return json({ data: null, error: true, message: "Invalid video ID" });
+  formItems.videoId = videoId;
+
   let data: any = null;
 
   switch (formItems._action) {
     case "generate":
-      data = await generateDescription(formItems.videoId as string);
-      return json({ data: { description: data, videoId: formItems.videoId } });
+      data = await generateDescription(videoId);
+      return json({
+        data: { description: data, videoId: formItems.videoId },
+        message: "Generated!",
+        error: false,
+      });
     case "save":
-      const dataToSave = {
-        data: {
-          videoId: formItems.videoId,
-          description: formItems.description,
-        },
-      };
-      data = await saveDescription(dataToSave);
-      return json({ data: null, message: "Saved!" });
+      await saveDescription(formItems);
+      return json({ data: null, message: "Saved!", error: false });
     default:
-      return json({ data, message: "No action found!" });
+      return json({ data: null, message: "No action found!", error: true });
+  }
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>
+          {error.status} {error.statusText}
+        </h1>
+        <p>{error.data}</p>
+      </div>
+    );
+  } else if (error instanceof Error) {
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error.message}</p>
+        <p>The stack trace is:</p>
+        <pre>{error.stack}</pre>
+      </div>
+    );
+  } else {
+    return <h1>Unknown Error</h1>;
   }
 }
 
 export default function Index() {
   const formActionData = useActionData<typeof action>();
+
+  useEffect(() => {
+    if (formActionData?.error) {
+      renderMessage(formActionData?.message, "error");
+    }
+
+    if (formActionData?.error === false) {
+      renderMessage(formActionData?.message, "success");
+    }
+  }, [formActionData]);
+
   const onUpdate = formActionData?.data?.videoId as string;
   return (
     <div>
