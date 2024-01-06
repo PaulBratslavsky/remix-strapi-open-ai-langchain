@@ -37,7 +37,7 @@ function DescriptionCard({ item }: { readonly item: any }) {
             <fieldset disabled={isUpdating}>
               <TextareaCustom
                 name="description"
-                className="w-full mb-6"
+                className="w-full mb-5"
                 defaultValue={item.description}
               />
               <input type="hidden" name="videoId" value={item.id} />
