@@ -11,7 +11,7 @@ import {
 } from "~/components/ui/card";
 import { Button } from "../ui/button";
 
-export function DescriptionList({ data }: { data: any }) {
+export function DescriptionList({ data }: { readonly data: any }) {
   return (
     <div className="my-4">
       {data.data.map((item: any) => (
@@ -21,7 +21,7 @@ export function DescriptionList({ data }: { data: any }) {
   );
 }
 
-function DescriptionCard({ item }: { item: any }) {
+function DescriptionCard({ item }: { readonly item: any }) {
   const fetcher = useFetcher();
   const isUpdating = fetcher.formData?.get("_action") === "update";
   const isDeleting = fetcher.formData?.get("_action") === "delete";
@@ -37,7 +37,7 @@ function DescriptionCard({ item }: { item: any }) {
             <fieldset disabled={isUpdating}>
               <TextareaCustom
                 name="description"
-                className="w-full mb-4"
+                className="w-full mb-6"
                 defaultValue={item.description}
               />
               <input type="hidden" name="videoId" value={item.id} />
